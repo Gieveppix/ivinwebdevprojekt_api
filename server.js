@@ -29,7 +29,60 @@ app.get("/ping", async (req, res) => {
 )
 
 //
-// LOGIN
+// GET USER DATA
+//
+
+app.get("/getData/:id", async (req, res) => {
+  let id = req.params.id;
+
+  const data = await db
+    .select("user_id", "name", "last_name", "adress", "email")
+    .from("users")
+    .where("user_id", "=", id)
+    .limit(1);
+
+  res.send(data[0]);
+});
+
+//
+// UPDATE USER DATA
+//
+
+app.put("/updateUser/:id", async (req, res) => {
+  let id = req.params.id
+  let body = req.body
+  
+  await db('users')
+  .where({ user_id: id })
+  .update({ 
+    name: `${body.name}`,
+    last_name: `${body.last_name}`,
+    email: `${body.email}`,
+    adress: `${body.adress}`
+
+    
+    
+  }, 
+    ['user_id', 'name', "last_name", "email", "adress"], 
+  )
+  .catch(res.status(400).json("Unable to update user info"))
+})
+
+//
+// DELETE USER
+//
+
+app.delete("/deleteUser/:id", async (req, res) => {
+  let id = req.params.id;
+
+  await db('users')
+  .where({ user_id: id})
+  .del()
+  res.end()
+})
+
+//
+// LOGIN 
 //
 
 app.post("/login", (req, res) => {
@@ -41,7 +94,7 @@ app.post("/login", (req, res) => {
   
         if (isValid) {
           return db
-            .select("user_id", "name", "email", "joined")
+            .select("user_id", "name", "email", "joined", "last_name", "adress")
             .from("users")
             .where("email", "=", req.body.email)
             .then((user) => {
@@ -114,7 +167,7 @@ app.post("/login", (req, res) => {
       from: "ivawebprojekt@outlook.com",
       to: to,
       subject: `TestProba`,
-      html: `Some random text, wateva i dont care. HERE CHAIR! <br><img src="cid:unique@kreata.ee"/>`,
+      html: `Some random text, wateva i dont care. <br><img src="cid:unique@kreata.ee"/>`,
       attachments: {
         filename: "chair.png",
         path: __dirname + `/assets/chair.png`,
